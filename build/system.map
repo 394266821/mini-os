@@ -1,0 +1,12 @@
+00001200 T _start
+0000122e T change_char_to_Z
+00001235 T kernel_main
+0000124b T kernel_test
+00001261 T kernel_test_char
+00001280 T kernel_test_my_var
+0000129c T kernel_change_var
+00003000 D my_var
+00003001 D my_var1
+00003002 D __bss_start
+00003002 D _edata
+00003004 D _end

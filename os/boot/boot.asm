@@ -6,15 +6,22 @@ BOOT_MAIN_ADDR equ 0x500
 
 [SECTION .text]
 [BITS 16]
-global _start
-_start:
+global boot_start
+boot_start:
     ; 设置屏幕模式为文本模式，清除屏幕
     mov ax, 3
     int 0x10
 
-    mov ecx, 2    ; 从硬盘哪个扇区开始读
+    mov edi, BOOT_MAIN_ADDR
+    mov ecx, 1    ; 从硬盘哪个扇区开始读
     mov bl, 2     ; 读取的扇区数量
+    
+    mov si, jmp_to_setup
+    call print
 
+    call read_hd
+
+read_hd:
     ; 0x1f2 8bit 指定读取或写入的扇区数
     mov dx, 0x1f2
     mov al, bl
@@ -43,6 +50,7 @@ _start:
     ; 6 0表示CHS模式，1表示LAB模式
     inc dx
     mov al, ch
+    or al, 0b1110_0000
     and al, 0b1110_1111
     out dx, al
 
@@ -57,21 +65,16 @@ _start:
     and al, 0b1000_1000
     cmp al, 0b0000_1000
     jnz .read_check
-    mov dx, 0x1f0
-    mov cx, 256
-    mov edi, BOOT_MAIN_ADDR
+    mov ecx, 256
+    imul ecx, 2
 
 .read_data:
+    mov dx, 0x1f0
     in ax, dx
     mov [edi], ax
     add edi, 2
     loop .read_data
-
-    mov si, jmp_to_setup
-    call print
-
     jmp BOOT_MAIN_ADDR
-
 
 ; void print(reg si)
 ; mov si, msg
@@ -92,7 +95,7 @@ print:
     ret
 
  jmp_to_setup:
-    db 'jump to setup...', 10, 13, 0
+    db 'Jump to Setup...', 10, 13, 0
 
 times 510 - ($ - $$) db 0
 db 0x55, 0xaa
